@@ -700,7 +700,7 @@ class Eeg:
 
                 # insert event data in the database
                 physiological.insert_event_file(
-                    event_data, event_path, physiological_file_id, blake2
+                    event_data, event_path, physiological_file_id, self.project_id, blake2
                 )
 
                 event_paths.extend([event_path])
@@ -747,7 +747,12 @@ class Eeg:
                     blake2 = blake2b(event_metadata_file.path.encode('utf-8')).hexdigest()
                     # insert event metadata in the database
                     physiological.insert_event_metadata(
-                        event_metadata, event_metadata_path, physiological_file_id, blake2
+                        event_metadata=event_metadata,
+                        event_metadata_file=event_metadata_path,
+                        physiological_file_id=physiological_file_id,
+                        project_id=self.project_id,
+                        blake2=blake2,
+                        project_wide=False
                     )
 
                     event_paths.extend([event_metadata_path])
