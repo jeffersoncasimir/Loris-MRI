@@ -941,7 +941,7 @@ class Physiological:
                 file_path=event_file
             )
 
-            if row['HED']:
+            if row['HED'] and len(row['HED']) > 0 and row['HED'] != 'n/a':
                 self.insert_hed_string(
                     row['HED'], last_task_id, None,
                     None, None, False, False
