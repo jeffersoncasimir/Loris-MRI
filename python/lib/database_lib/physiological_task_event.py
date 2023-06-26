@@ -55,12 +55,12 @@ class PhysiologicalTaskEvent:
         column_names = (
             'PhysiologicalFileID', 'EventFileID', 'Onset', 'Duration',
             'EventCode', 'EventValue', 'EventSample', 'EventType',
-            'TrialType', 'ResponseTime', 'FilePath'
+            'TrialType', 'ResponseTime'
         )
         values = (
             physiological_file_id, event_file_id, onset, duration,
             event_code, event_value, event_sample, event_type,
-            trial_type, response_time, file_path
+            trial_type, response_time
         )
         return self.db.insert(
             table_name=self.table,
