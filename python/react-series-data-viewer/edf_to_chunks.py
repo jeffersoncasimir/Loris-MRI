@@ -27,7 +27,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     for path in args.files:
-        _, edf_info, _ = mne_edf._get_info(path, stim_channel='auto', eog=None, misc=None, exclude=(), preload=False)
+        _, edf_info, _ = mne_edf._get_info(path, stim_channel='auto', eog=None, misc=None,
+                                           exclude=(), preload=False, infer_types=False)
         channel_names = edf_info['ch_names']
 
         if args.channel_index < 0:
@@ -71,6 +72,5 @@ if __name__ == '__main__':
                 channel_count=1,
                 chunk_size=args.chunk_size,
                 destination=args.destination,
-                prefix=args.prefix,
-		infer_types=False
+                prefix=args.prefix
             )
