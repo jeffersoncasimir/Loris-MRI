@@ -91,7 +91,7 @@ class Candidate:
             if 'site' in row and row['site'].lower() not in ("null", ""):
                 # search site id in psc table by its full name
                 site_info = db.pselect(
-                    "SELECT CenterID FROM psc WHERE Name = %s",
+                    "SELECT CenterID FROM psc WHERE Alias = %s",
                     [row['site'], ]
                 )
                 if len(site_info) > 0:
@@ -116,7 +116,6 @@ class Candidate:
             # two steps to find project:
             #   1. find full name in 'project' column in participants.tsv
             #   2. find previous in candidate table
-
             if 'project' in row and row['project'].lower() not in ("null", ""):
                 # search project id in Project table by its full name
                 project_info = db.pselect(
