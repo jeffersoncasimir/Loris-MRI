@@ -71,5 +71,6 @@ if __name__ == '__main__':
                 channel_count=1,
                 chunk_size=args.chunk_size,
                 destination=args.destination,
-                prefix=args.prefix
+                prefix=args.prefix,
+		infer_types=False
             )
