@@ -738,10 +738,10 @@ class Physiological:
 
     @dataclass
     class TagGroupMember:
-        hed_tag_id: int | None
+        hed_tag_id: int #| None
         has_pairing: bool
         additional_members: int
-        tag_value: str | None = None
+        tag_value: str = None #| None = None
 
         def __eq__(self, other):
             return self.hed_tag_id == other.hed_tag_id and \
