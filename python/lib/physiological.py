@@ -738,7 +738,7 @@ class Physiological:
 
     @dataclass
     class TagGroupMember:
-        hed_tag_id: int #| None
+        hed_tag_id: int #| None -- To add back with python version upgrade
         has_pairing: bool
         additional_members: int
         tag_value: str = None #| None = None
