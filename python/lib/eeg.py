@@ -78,7 +78,7 @@ class Eeg:
 
     def __init__(self, bids_reader, bids_sub_id, bids_ses_id, bids_modality, db,
                  verbose, data_dir, default_visit_label, loris_bids_eeg_rel_dir,
-                 loris_bids_root_dir, dataset_tag_dict):
+                 loris_bids_root_dir, dataset_tag_dict, cbrain_chunks):
         """
         Constructor method for the Eeg class.
 
@@ -105,6 +105,8 @@ class Eeg:
          :type loris_bids_root_dir   : str
         :param dataset_tag_dict      : Dict of dataset-inherited HED tags
          :type dataset_tag_dict      : dict
+        :param create_chunks         : Whether to create chunks automatically
+         :type create_chunks         : bool
 
         """
 
@@ -161,6 +163,9 @@ class Eeg:
         self.scans_file = None
         if self.bids_layout.get(suffix='scans', subject=self.psc_id, return_type='filename'):
             self.scans_file = self.bids_layout.get(suffix='scans', subject=self.psc_id, return_type='filename')[0]
+
+
+        self.cbrain_chunks = cbrain_chunks
 
         # register the data into LORIS
         self.register_data()
@@ -324,7 +329,11 @@ class Eeg:
 
             # create data chunks for React visualization in
             # data_dir/bids_import/bids_dataset_name_BIDSVersion_chunks directory
-            physiological.create_chunks_for_visualization(eeg_file_id, self.data_dir)
+            if self.cbrain_chunks:
+                print('Creating chunks for {}'.format(eeg_file_id))
+                physiological.create_chunks_for_visualization(eeg_file_id, self.data_dir)
+            else:
+                physiological.create_chunks_for_visualization(eeg_file_id, self.data_dir)
 
     def fetch_and_insert_eeg_files(self, derivatives=False):
         """

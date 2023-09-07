@@ -29,15 +29,16 @@ sys.path.append('/home/user/python')
 # sys.tracebacklimit = 0
 
 def main():
-    bids_dir    = ''
-    verbose     = False
-    createcand  = False
-    createvisit = False
-    profile     = ''
+    bids_dir        = ''
+    verbose         = False
+    createcand      = False
+    createvisit     = False
+    cbrainchunks    = False
+    profile         = ''
 
     long_options = [
         "help",            "profile=",      "directory=",
-        "createcandidate", "createsession", "verbose"
+        "createcandidate", "createsession", "createchunks", "verbose"
     ]
     usage        = (
         '\n'
@@ -48,11 +49,12 @@ def main():
         '\t-d, --directory      : BIDS directory to parse & insert into LORIS\n'
         '\t-c, --createcandidate: to create BIDS candidates in LORIS (optional)\n'
         '\t-s, --createsession  : to create BIDS sessions in LORIS (optional)\n'
+        '\t-b, --cbrainchunks   : to register entries for chunking on CBRAIN (optional)\n'
         '\t-v, --verbose        : be verbose\n'
     )
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hp:d:csv', long_options)
+        opts, args = getopt.getopt(sys.argv[1:], 'hp:d:csvb', long_options)
     except getopt.GetoptError:
         print(usage)
         sys.exit(lib.exitcode.GETOPT_FAILURE)
@@ -71,12 +73,14 @@ def main():
             createcand = True
         elif opt in ('-s', '--createsession'):
             createvisit = True
+        elif opt in ('-b', '--createchunks'):
+            cbrainchunks = True
 
     # input error checking and load config_file file
     config_file = input_error_checking(profile, bids_dir, usage)
 
     # read and insert BIDS data
-    read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit)
+    read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit, cbrainchunks)
 
 
 def input_error_checking(profile, bids_dir, usage):
@@ -130,20 +134,22 @@ def input_error_checking(profile, bids_dir, usage):
     return config_file
 
 
-def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit):
+def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit, cbrainchunks):
     """
     Read the provided BIDS structure and import it into the database.
 
-    :param bids_dir   : path to the BIDS directory
-     :type bids_dir   : str
-    :param config_file: path to the config file with database connection information
-     :type config_file: str
-    :param verbose    : flag for more printing if set
-     :type verbose    : bool
-    :param createcand : allow database candidate creation if it did not exist already
-     :type createcand : bool
-    :param createvisit: allow database visit creation if it did not exist already
-     :type createvisit: bool
+    :param bids_dir    : path to the BIDS directory
+     :type bids_dir    : str
+    :param config_file : path to the config file with database connection information
+     :type config_file : str
+    :param verbose     : flag for more printing if set
+     :type verbose     : bool
+    :param createcand  : allow database candidate creation if it did not exist already
+     :type createcand  : bool
+    :param createvisit : allow database visit creation if it did not exist already
+     :type createvisit : bool
+    :param cbrainchunks: create chunks on cbrain instead of locally
+     :type cbrainchunks: bool
     """
 
     # database connection
@@ -284,7 +290,8 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
                     default_visit_label    = default_bids_vl,
                     loris_bids_eeg_rel_dir = loris_bids_modality_rel_dir,
                     loris_bids_root_dir    = loris_bids_root_dir,
-                    dataset_tag_dict       = dataset_tag_dict
+                    dataset_tag_dict       = dataset_tag_dict,
+                    create_chunks          = cbrainchunks
                 )
 
             elif modality in ['anat', 'dwi', 'fmap', 'func']:
