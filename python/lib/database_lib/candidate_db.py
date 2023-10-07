@@ -55,3 +55,19 @@ class CandidateDB:
         results = self.db.pselect(query=query, args=(psc_id, cand_id))
 
         return results if results else None
+
+    def update_candidate_dob(self, id, dob):
+        """
+        Update candidate DoB in `candidate` table.
+
+        :param id: ID of the candidate
+         :type id: str
+        :param dob: Date of birth of the candidate
+         :type dob: int
+
+        :returns: void
+        """
+        self.db.update(
+            query="UPDATE candidate SET DoB=%s WHERE ID=%s",
+            args=(dob, id)
+        )

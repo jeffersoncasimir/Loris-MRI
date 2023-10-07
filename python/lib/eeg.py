@@ -1,6 +1,7 @@
 """Deals with EEG BIDS datasets and register them into the database."""
 
 import os
+import re
 import json
 import getpass
 from pyblake2 import blake2b
@@ -15,6 +16,7 @@ from lib.database_lib.physiological_event_file      import PhysiologicalEventFil
 from lib.database_lib.physiological_event_archive   import PhysiologicalEventArchive
 from lib.database_lib.physiological_modality        import PhysiologicalModality
 from lib.database_lib.physiological_output_type     import PhysiologicalOutputType
+from lib.database_lib.candidate_db                  import CandidateDB
 
 
 __license__ = "GPLv3"
@@ -78,7 +80,7 @@ class Eeg:
 
     def __init__(self, bids_reader, bids_sub_id, bids_ses_id, bids_modality, db,
                  verbose, data_dir, default_visit_label, loris_bids_eeg_rel_dir,
-                 loris_bids_root_dir, dataset_tag_dict, cbrain_chunks):
+                 loris_bids_root_dir, dataset_tag_dict, create_chunks):
         """
         Constructor method for the Eeg class.
 
@@ -147,6 +149,7 @@ class Eeg:
         for row in bids_reader.participants_info:
             if not row['participant_id'] == self.psc_id:
                 continue
+            self.cand_age = int(row['age'])
             if 'cohort' in row:
                 cohort_info = db.pselect(
                     "SELECT CohortID FROM cohort WHERE title = %s",
@@ -165,7 +168,7 @@ class Eeg:
             self.scans_file = self.bids_layout.get(suffix='scans', subject=self.psc_id, return_type='filename')[0]
 
 
-        self.cbrain_chunks = cbrain_chunks
+        self.create_chunks = create_chunks
 
         # register the data into LORIS
         self.register_data()
@@ -329,8 +332,8 @@ class Eeg:
 
             # create data chunks for React visualization in
             # data_dir/bids_import/bids_dataset_name_BIDSVersion_chunks directory
-            if self.cbrain_chunks:
-                print('Creating chunks for {}'.format(eeg_file_id))
+            print('Creating chunks for {}'.format(eeg_file_id))
+            if self.create_chunks:
                 physiological.create_chunks_for_visualization(eeg_file_id, self.data_dir)
             else:
                 physiological.create_chunks_for_visualization(eeg_file_id, self.data_dir)
@@ -418,6 +421,23 @@ class Eeg:
             if self.scans_file:
                 scan_info = ScansTSV(self.scans_file, eeg_file.path, self.verbose)
                 eeg_acq_time = scan_info.get_acquisition_time()
+                if eeg_acq_time and self.loris_cand_info['DoB'] is None:
+                    # Derive Date of Birth from Age and scan acquisition time
+                    derived_year = eeg_acq_time.year - self.cand_age
+                    derived_day = 15 if eeg_acq_time.day > 14 else 1
+
+                    derived_dob = eeg_acq_time\
+                        .replace(year=derived_year)\
+                        .replace(day=derived_day)
+
+                    candidate_db = CandidateDB(self.db, self.verbose)
+                    candidate_db.update_candidate_dob(
+                        self.loris_cand_info['ID'],
+                        derived_dob.strftime('%Y-%m-%d %H:%M:%S')
+                    )
+
+
+                # This is not a bids-recognized field
                 eeg_file_data['age_at_scan'] = scan_info.get_age_at_scan()
 
                 # copy the scans.tsv file to the LORIS BIDS import directory

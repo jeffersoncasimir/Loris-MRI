@@ -28,7 +28,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     for path in args.files:
         _, edf_info, _ = mne_edf._get_info(path, stim_channel='auto', eog=None, misc=None,
-                                           exclude=(), preload=False) #, infer_types=False) To add back with python version upgrade
+                                           exclude=(), preload=False, infer_types=False)
         channel_names = edf_info['ch_names']
 
         if args.channel_index < 0:
