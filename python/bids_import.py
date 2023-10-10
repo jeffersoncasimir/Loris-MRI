@@ -181,6 +181,8 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
 
     # Assumption all same project (for project-wide tags)
     single_project_id = None
+    # Assumption all same project alias (for candidate names).
+    single_project_alias = None
 
     # loop through subjects
     for bids_subject_info in bids_reader.participants_info:
@@ -199,17 +201,24 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
         project_id = loris_cand_info['RegistrationProjectID']
         single_project_id = project_id
 
+        project_alias = db.pselect(
+            "SELECT Alias FROM Project WHERE ProjectID = %s",
+            [project_id, ]
+        )
+        if len(project_alias) == 1:
+            single_project_alias = project_alias[0]['Alias']
+
         cohort_id = None
-        # TODO: change subproject -> cohort in participants.tsv?
-        if 'subproject' in bids_subject_info:
-            # TODO: change subproject -> cohort in participants.tsv?
-            cohort = bids_subject_info['subproject']
-            cohort_info = db.pselect(
-                "SELECT CohortID FROM cohort WHERE title = %s",
-                [cohort, ]
-            )
-            if len(cohort_info) > 0:
-                cohort_id = cohort_info[0]['CohortID']
+        # # TODO: change subproject -> cohort in participants.tsv?
+        # if 'subproject' in bids_subject_info:
+        #     # TODO: change subproject -> cohort in participants.tsv?
+        #     cohort = bids_subject_info['subproject']
+        #     cohort_info = db.pselect(
+        #         "SELECT CohortID FROM cohort WHERE title = %s",
+        #         [cohort, ]
+        #     )
+        #     if len(cohort_info) > 0:
+        #         cohort_id = cohort_info[0]['CohortID']
 
         # greps BIDS session's info for the candidate from LORIS (creates the
         # session if it does not exist yet in LORIS and the createvisit is set
@@ -284,6 +293,7 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
                     bids_sub_id   = row['bids_sub_id'],
                     bids_ses_id   = row['bids_ses_id'],
                     bids_modality = modality,
+                    project_alias  = single_project_alias,
                     db            = db,
                     verbose       = verbose,
                     data_dir      = data_dir,
@@ -402,13 +412,27 @@ def grep_or_create_candidate_db_info(bids_reader, bids_id,        db,
              a dictionary with field's values from the candidate table
      :rtype: list
     """
+    participant_row = next((row for row in bids_reader.participants_info
+                           if row['participant_id'] == bids_id), None)
+    if not participant_row:
+        return
 
-    candidate = Candidate(verbose, psc_id=bids_id)
+    project_alias = ''
+    project_info = db.pselect(
+        "SELECT Alias FROM Project WHERE Name = %s",
+        [participant_row['project'], ]
+    )
+    if len(project_info) > 0:
+        project_alias = project_info[0]['Alias']
+
+    psc_id = project_alias + bids_id
+
+    candidate = Candidate(verbose, psc_id=psc_id)
     loris_cand_info = candidate.get_candidate_info_from_loris(db)
 
     if not loris_cand_info and createcand:
         loris_cand_info = candidate.create_candidate(
-            db, bids_reader.participants_info
+            db, participant_row
         )
 
     # create the candidate's directory in the LORIS BIDS import directory

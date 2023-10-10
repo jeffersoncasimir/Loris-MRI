@@ -57,16 +57,16 @@ class Candidate:
         self.center_id  = None
         self.project_id = None
 
-    def create_candidate(self, db, participants_info):
+    def create_candidate(self, db, participant_row):
         """
         Creates a candidate using BIDS information provided in the
         participants_info's list.
 
         :param db               : database handler object
          :type db               : object
-        :param participants_info: list of dictionary with participants
+        :param participant_row: : dictionary containing participant's
                                   information from BIDS
-         :type participants_info: list
+         :type participant_row: : dict
 
         :return: dictionary with candidate info from the candidate's table
          :rtype: dict
@@ -74,65 +74,62 @@ class Candidate:
 
         self.cand_id = self.generate_cand_id(db)
 
-        for row in participants_info:
-            if not row['participant_id'] == self.psc_id:
-                continue
-            self.grep_bids_dob(row)
-            if 'sex' in row:
-                self.map_sex(row['sex'])
-            if 'age' in row:
-                self.age = row['age']
+        self.grep_bids_dob(participant_row)
+        if 'sex' in participant_row:
+            self.map_sex(participant_row['sex'])
+        if 'age' in participant_row:
+            self.age = participant_row['age']
 
-            # three steps to find site:
-            #   1. try matching full name from 'site' column in participants.tsv in db
-            #   2. try extracting alias from pscid
-            #   3. try finding previous site in candidate table
+        # three steps to find site:
+        #   1. try matching full name from 'site' column in participants.tsv in db
+        #   2. try extracting alias from pscid
+        #   3. try finding previous site in candidate table
 
-            if 'site' in row and row['site'].lower() not in ("null", ""):
-                # search site id in psc table by its full name
-                site_info = db.pselect(
-                    "SELECT CenterID FROM psc WHERE Alias = %s",
-                    [row['site'], ]
-                )
-                if len(site_info) > 0:
-                    self.center_id = site_info[0]['CenterID']
+        if 'site' in participant_row and participant_row['site'].lower() not in ("null", ""):
+            # search site id in psc table by its full name
+            site_info = db.pselect(
+                "SELECT CenterID FROM psc WHERE Alias = %s",
+                [participant_row['site'], ]
+            )
+            if len(site_info) > 0:
+                self.center_id = site_info[0]['CenterID']
 
-            if self.center_id is None:
-                # search site id in psc table by its alias extracted from pscid
-                db_sites = db.pselect("SELECT CenterID, Alias FROM psc")
-                for site in db_sites:
-                    if site['Alias'] in row['participant_id']:
-                        self.center_id = site['CenterID']
+        if self.center_id is None:
+            # search site id in psc table by its alias extracted from pscid
+            db_sites = db.pselect("SELECT CenterID, Alias FROM psc")
+            for site in db_sites:
+                if site['Alias'] in participant_row['participant_id']:
+                    self.center_id = site['CenterID']
 
-            if self.center_id is None:
-                # try to find participant site in db
-                candidate_site_project = db.pselect(
-                    "SELECT RegistrationCenterID FROM candidate WHERE pscid = %s",
-                    [self.psc_id, ]
-                )
-                if len(candidate_site_project) > 0:
-                    self.center_id = candidate_site_project[0]['RegistrationCenterID']
+        if self.center_id is None:
+            # try to find participant site in db
+            candidate_site_project = db.pselect(
+                "SELECT RegistrationCenterID FROM candidate WHERE pscid = %s",
+                [self.psc_id, ]
+            )
+            if len(candidate_site_project) > 0:
+                self.center_id = candidate_site_project[0]['RegistrationCenterID']
 
-            # two steps to find project:
-            #   1. find full name in 'project' column in participants.tsv
-            #   2. find previous in candidate table
-            if 'project' in row and row['project'].lower() not in ("null", ""):
-                # search project id in Project table by its full name
-                project_info = db.pselect(
-                    "SELECT ProjectID FROM Project WHERE Name = %s",
-                    [row['project'], ]
-                )
-                if len(project_info) > 0:
-                    self.project_id = project_info[0]['ProjectID']
+        # two steps to find project:
+        #   1. find full name in 'project' column in participants.tsv
+        #   2. find previous in candidate table
+        if 'project' in participant_row and participant_row['project'].lower() not in ("null", ""):
+            # search project id in Project table by its full name
+            project_info = db.pselect(
+                "SELECT ProjectID FROM Project WHERE Name = %s",
+                [participant_row['project'], ]
+            )
+            if len(project_info) > 0:
+                self.project_id = project_info[0]['ProjectID']
 
-            if self.project_id is None:
-                # try to find participant project
-                candidate_site_project = db.pselect(
-                    "SELECT RegistrationProjectID FROM candidate WHERE pscid = %s",
-                    [self.psc_id, ]
-                )
-                if len(candidate_site_project) > 0:
-                    self.center_id = candidate_site_project[0]['RegistrationProjectID']
+        if self.project_id is None:
+            # try to find participant project
+            candidate_site_project = db.pselect(
+                "SELECT RegistrationProjectID FROM candidate WHERE pscid = %s",
+                [self.psc_id, ]
+            )
+            if len(candidate_site_project) > 0:
+                self.center_id = candidate_site_project[0]['RegistrationProjectID']
 
         if not self.center_id:
             print("ERROR: could not determine site for " + self.psc_id + "."

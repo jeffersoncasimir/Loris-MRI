@@ -78,8 +78,8 @@ class Eeg:
         db.disconnect()
     """
 
-    def __init__(self, bids_reader, bids_sub_id, bids_ses_id, bids_modality, db,
-                 verbose, data_dir, default_visit_label, loris_bids_eeg_rel_dir,
+    def __init__(self, bids_reader, bids_sub_id, bids_ses_id, bids_modality, project_alias,
+                 db, verbose, data_dir, default_visit_label, loris_bids_eeg_rel_dir,
                  loris_bids_root_dir, dataset_tag_dict, create_chunks):
         """
         Constructor method for the Eeg class.
@@ -91,7 +91,9 @@ class Eeg:
         :param bids_ses_id  : BIDS session ID (that will be used for the visit label)
          :type bids_ses_id  : str
         :param bids_modality: BIDS modality (a.k.a. EEG)
-         :tyoe bids_modality: str
+         :type bids_modality: str
+        :param project_alias: Three-letter project code for PSCID
+         :type project_alias: str
         :param db           : Database class object
          :type db           : object
         :param verbose      : whether to be verbose
@@ -119,7 +121,7 @@ class Eeg:
         # load the LORIS BIDS import root directory where the eeg files will
         # be copied
         self.loris_bids_eeg_rel_dir = loris_bids_eeg_rel_dir
-        self.loris_bids_root_dir    = loris_bids_root_dir
+        self.loris_bids_root_dir    = loris_bids_root_dirn
         self.data_dir               = data_dir
 
         # load bids subject, visit and modality
@@ -134,8 +136,10 @@ class Eeg:
         self.db      = db
         self.verbose = verbose
 
+        self.project_alias   = project_alias
         # find corresponding CandID and SessionID in LORIS
         self.loris_cand_info = self.get_loris_cand_info()
+
         self.default_vl      = default_visit_label
         self.psc_id          = self.loris_cand_info['PSCID']
         self.cand_id         = self.loris_cand_info['CandID']
@@ -145,9 +149,10 @@ class Eeg:
         hed_query = 'SELECT * FROM hed_schema_nodes WHERE 1'
         self.hed_union = self.db.pselect(query=hed_query, args=())
 
-        self.cohort_id   = None
+        self.cohort_id      = None
+
         for row in bids_reader.participants_info:
-            if not row['participant_id'] == self.psc_id:
+            if not row['participant_id'] == self.bids_sub_id:
                 continue
             self.cand_age = int(row['age'])
             if 'cohort' in row:
@@ -164,9 +169,8 @@ class Eeg:
 
         # check if a tsv with acquisition dates or age is available for the subject
         self.scans_file = None
-        if self.bids_layout.get(suffix='scans', subject=self.psc_id, return_type='filename'):
-            self.scans_file = self.bids_layout.get(suffix='scans', subject=self.psc_id, return_type='filename')[0]
-
+        if self.bids_layout.get(suffix='scans', subject=self.bids_sub_id, return_type='filename'):
+            self.scans_file = self.bids_layout.get(suffix='scans', subject=self.bids_sub_id, return_type='filename')[0]
 
         self.create_chunks = create_chunks
 
@@ -181,8 +185,8 @@ class Eeg:
         :return: Candidate info of the subject found in the database
          :rtype: list
         """
-
-        candidate = Candidate(verbose=self.verbose, psc_id=self.bids_sub_id)
+        psc_id = self.project_alias + self.bids_sub_id
+        candidate = Candidate(verbose=self.verbose, psc_id=psc_id)
         loris_cand_info = candidate.get_candidate_info_from_loris(self.db)
 
         return loris_cand_info
@@ -590,7 +594,7 @@ class Eeg:
                         suffix = 'coordsystem',
                         all_ = False,
                         full_search = False,
-                        subject=self.psc_id,
+                        subject=self.bids_sub_id,
                     )
                     if not coordsystem_metadata_file:
                         message = '\nWARNING: no electrode metadata files (coordsystem.json) ' \
@@ -740,7 +744,7 @@ class Eeg:
                     suffix = 'events',
                     all_ = False,
                     full_search = False,
-                    subject=self.psc_id,
+                    subject=self.bids_sub_id,
                 )
                 inheritance = False
 
