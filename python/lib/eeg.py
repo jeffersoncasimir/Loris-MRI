@@ -121,7 +121,7 @@ class Eeg:
         # load the LORIS BIDS import root directory where the eeg files will
         # be copied
         self.loris_bids_eeg_rel_dir = loris_bids_eeg_rel_dir
-        self.loris_bids_root_dir    = loris_bids_root_dirn
+        self.loris_bids_root_dir    = loris_bids_root_dir
         self.data_dir               = data_dir
 
         # load bids subject, visit and modality
