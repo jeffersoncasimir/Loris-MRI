@@ -1239,11 +1239,12 @@ class Physiological:
             chunk_path = chunk_root_dir + os.path.splitext(os.path.basename(file_path))[0] + '.chunks'
             if file_type == 'set':
                 script = os.environ['LORIS_MRI'] + '/python/react-series-data-viewer/eeglab_to_chunks.py'
-                command = 'python ' + script + ' ' + data_dir + file_path + ' --destination ' + chunk_root_dir
+                command = 'python3 ' + script + ' ' + data_dir + file_path + ' --destination ' + chunk_root_dir
             elif file_type == 'edf':
                 script = os.environ['LORIS_MRI'] + '/python/react-series-data-viewer/edf_to_chunks.py'
-                command = 'python ' + script + ' ' + data_dir + file_path + ' --destination ' + chunk_root_dir
+                command = 'python3 ' + script + ' ' + data_dir + file_path + ' --destination ' + chunk_root_dir
 
+        print('command to execute: {}'.format(command))
         # chunk the electrophysiology dataset if a command was determined above
         if command:
             try:
