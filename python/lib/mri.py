@@ -72,8 +72,8 @@ class Mri:
         db.disconnect()
     """
 
-    def __init__(self, bids_reader, bids_sub_id, bids_ses_id, bids_modality, db,
-                 verbose, data_dir, default_visit_label,
+    def __init__(self, bids_reader, bids_sub_id, bids_ses_id, bids_modality, project_alias,
+                 db, verbose, data_dir, default_visit_label,
                  loris_bids_mri_rel_dir, loris_bids_root_dir):
 
         # enumerate the different suffixes supported by BIDS per modality type
@@ -112,6 +112,7 @@ class Mri:
         self.db      = db
         self.verbose = verbose
 
+        self.project_alias   = project_alias
         # find corresponding CandID and SessionID in LORIS
         self.loris_cand_info = self.get_loris_cand_info()
         self.default_vl      = default_visit_label
@@ -155,8 +156,8 @@ class Mri:
         :return: Candidate info of the subject found in the database
          :rtype: list
         """
-
-        candidate       = Candidate(verbose=self.verbose, psc_id=self.bids_sub_id)
+        psc_id = self.project_alias + self.bids_sub_id
+        candidate       = Candidate(verbose=self.verbose, psc_id=psc_id)
         loris_cand_info = candidate.get_candidate_info_from_loris(self.db)
 
         return loris_cand_info
