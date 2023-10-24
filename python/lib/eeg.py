@@ -420,6 +420,9 @@ class Eeg:
             output_type_obj = PhysiologicalOutputType(self.db, self.verbose)
             output_type_id = output_type_obj.grep_id_from_output_type(output_type)
 
+            # Add age_at_scan field (CouchDB_EEG_Importer)
+            eeg_file_data['age_at_scan'] = self.cand_age
+
             # get the acquisition date of the EEG file or the age at the time of the EEG recording
             eeg_acq_time = None
             if self.scans_file:
@@ -439,10 +442,6 @@ class Eeg:
                         self.loris_cand_info['ID'],
                         derived_dob.strftime('%Y-%m-%d %H:%M:%S')
                     )
-
-
-                # This is not a bids-recognized field
-                eeg_file_data['age_at_scan'] = scan_info.get_age_at_scan()
 
                 # copy the scans.tsv file to the LORIS BIDS import directory
                 scans_path = scan_info.copy_scans_tsv_file_to_loris_bids_dir(
