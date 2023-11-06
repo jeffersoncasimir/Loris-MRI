@@ -10,14 +10,15 @@ import json
 import lib.exitcode
 import lib.utilities
 import lib.physiological
-from lib.database   import Database
-from lib.candidate  import Candidate
-from lib.bidsreader import BidsReader
-from lib.session    import Session
-from lib.eeg        import Eeg
-from lib.mri        import Mri
-from lib.database_lib.config import Config
-from pyblake2 import blake2b
+from lib.database                           import Database
+from lib.candidate                          import Candidate
+from lib.bidsreader                         import BidsReader
+from lib.session                            import Session
+from lib.eeg                                import Eeg
+from lib.mri                                import Mri
+from lib.database_lib.config                import Config
+from lib.database_lib.parameter_candidate   import ParameterCandidate
+from pyblake2                               import blake2b
 
 __license__ = "GPLv3"
 
@@ -207,6 +208,17 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
         )
         if len(project_alias) == 1:
             single_project_alias = project_alias[0]['Alias']
+
+        # Add DoB flag
+        dob_flag = 'not_known'
+        # TODO: Determine all scenarios
+        if loris_cand_info['DoB'] is None:
+            dob_flag = 'coded'
+        else:
+            dob_flag = 'coded'
+
+        parameter_candidate = ParameterCandidate(db, verbose)
+        parameter_candidate.add_dob_flag(cand_id, dob_flag)
 
         cohort_id = None
         # # TODO: change subproject -> cohort in participants.tsv?

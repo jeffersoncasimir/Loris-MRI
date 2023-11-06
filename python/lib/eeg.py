@@ -425,6 +425,7 @@ class Eeg:
 
             # get the acquisition date of the EEG file or the age at the time of the EEG recording
             eeg_acq_time = None
+
             if self.scans_file:
                 scan_info = ScansTSV(self.scans_file, eeg_file.path, self.verbose)
                 eeg_acq_time = scan_info.get_acquisition_time()
