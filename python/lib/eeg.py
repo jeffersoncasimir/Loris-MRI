@@ -17,6 +17,7 @@ from lib.database_lib.physiological_event_archive   import PhysiologicalEventArc
 from lib.database_lib.physiological_modality        import PhysiologicalModality
 from lib.database_lib.physiological_output_type     import PhysiologicalOutputType
 from lib.database_lib.candidate_db                  import CandidateDB
+from lib.database_lib.session_db                    import SessionDB
 
 
 __license__ = "GPLv3"
@@ -522,6 +523,15 @@ class Eeg:
                     'fdt_file_path': fdt_file_path,
                     'original_file_data': eeg_file,
                 })
+
+            # Update session stage - EEGNet OVERRIDE
+            session_db = SessionDB(self.db, self.verbose)
+            session_db.update_session_stage(
+                session_id=self.session_id,
+                current_stage='Visit',
+                stage_status='Pass',
+                stage_date=eeg_acq_time.date(),
+            )
 
         return inserted_eegs
 

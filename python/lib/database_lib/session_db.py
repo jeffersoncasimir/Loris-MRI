@@ -120,3 +120,29 @@ class SessionDB:
         )
 
         return session_id
+
+    def update_session_stage(self, session_id, current_stage, stage_status, stage_date):
+        """
+        Update session stage.
+
+        :param session_id: session table primary key
+         :type session_id: int
+        :param current_stage: Value for 'Current_stage'
+         :type current_stage: str
+        :param stage_status: Value for the status of Current_stage
+         :type stage_status: str
+        :param stage_date: Value for 'Date_' field of stage
+         :type stage_date: str
+
+        :return: int
+         :rtype: int
+        """
+        current_stage_field = 'Current_stage'
+        stage_status_field = current_stage   # Ex: 'Visit', 'Approval'
+        stage_date_field = 'Date_{}'.format(current_stage.lower())
+        return self.db.update(
+            query="UPDATE session SET {}=%s, {}=%s, {}=DATE(%s) WHERE ID=%s".format(
+                current_stage_field, stage_status_field, stage_date_field
+            ),
+            args=(current_stage, stage_status, stage_date, session_id)
+        )
