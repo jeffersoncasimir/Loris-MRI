@@ -9,7 +9,7 @@ google
 matplotlib
 nose
 nilearn
-sklearn
+scikit-learn
 virtualenv
 python-dateutil
 nibabel
