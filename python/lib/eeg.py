@@ -155,7 +155,11 @@ class Eeg:
         for row in bids_reader.participants_info:
             if not row['participant_id'] == self.bids_sub_id:
                 continue
-            self.cand_age = int(row['age'])
+
+            self.cand_age = int(row['age']) if (
+                'age' in row and row['age'] != 'n/a'
+            ) else None
+
             if 'cohort' in row:
                 cohort_info = db.pselect(
                     "SELECT CohortID FROM cohort WHERE title = %s",
@@ -421,16 +425,15 @@ class Eeg:
             output_type_obj = PhysiologicalOutputType(self.db, self.verbose)
             output_type_id = output_type_obj.grep_id_from_output_type(output_type)
 
-            # Add age_at_scan field (CouchDB_EEG_Importer)
-            eeg_file_data['age_at_scan'] = self.cand_age
-
             # get the acquisition date of the EEG file or the age at the time of the EEG recording
             eeg_acq_time = None
 
             if self.scans_file:
                 scan_info = ScansTSV(self.scans_file, eeg_file.path, self.verbose)
                 eeg_acq_time = scan_info.get_acquisition_time()
-                if eeg_acq_time and self.loris_cand_info['DoB'] is None:
+                if eeg_acq_time and \
+                        self.loris_cand_info['DoB'] is None and \
+                        self.cand_age is not None:
                     # Derive Date of Birth from Age and scan acquisition time
                     derived_year = eeg_acq_time.year - self.cand_age
                     derived_day = 15 if eeg_acq_time.day > 14 else 1
@@ -453,6 +456,16 @@ class Eeg:
                 eeg_file_data['scans_tsv_file'] = scans_path
                 scans_blake2 = blake2b(self.scans_file.encode('utf-8')).hexdigest()
                 eeg_file_data['physiological_scans_tsv_file_bake2hash'] = scans_blake2
+            elif eeg_acq_time and \
+                self.loris_cand_info['DoB'] is not None and \
+                self.cand_age is None:
+                # Derive Age from Date of Birth and scan acquisition time
+                scan_time_year = eeg_acq_time.year
+                dob_year = int(self.loris_cand_info['DoB'][:4])
+                self.cand_age = scan_time_year - dob_year
+
+            # Add age_at_scan field (CouchDB_EEG_Importer)
+            eeg_file_data['age_at_scan'] = self.cand_age
 
             # if file type is set and fdt file exists, append fdt path to the
             # eeg_file_data dictionary
