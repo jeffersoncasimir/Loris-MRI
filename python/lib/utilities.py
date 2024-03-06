@@ -42,6 +42,22 @@ def read_tsv_file(tsv_file):
     return results
 
 
+def inject_project_code_in_tsv(tsv_file, project_code, column_name, verbose):
+    tsv_content = read_tsv_file(tsv_file)
+    tsv_columns = tsv_content[0].keys()
+    with open(tsv_file, "w") as file:
+        try:
+            writer = csv.DictWriter(file, fieldnames=tsv_columns, delimiter='\t')
+            writer.writeheader()
+            for row in tsv_content:
+                row[column_name] = \
+                    row[column_name].replace('sub-', 'sub-' + project_code)
+                writer.writerow(row)
+        except ValueError:
+            if verbose:
+                print(f"{column_name} not found in {tsv_file}")
+
+
 def append_to_tsv_file(new_tsv_file, old_tsv_file, key_value_check, verbose):
     """
     This function will compare the content of two TSV files and append missing values

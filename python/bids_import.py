@@ -206,8 +206,7 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
             "SELECT Alias FROM Project WHERE ProjectID = %s",
             [project_id, ]
         )
-        if len(project_alias) == 1:
-            single_project_alias = project_alias[0]['Alias']
+        single_project_alias = project_alias[0]['Alias']
 
         # Add DoB flag
         dob_flag = 'not_known'
@@ -242,6 +241,14 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
             center_id,     project_id, cohort_id
         )
 
+    # Inject project code in participants.tsv
+    lib.utilities.inject_project_code_in_tsv(
+        loris_bids_root_dir + "participants.tsv",
+        single_project_alias,
+        "participant_id",
+        verbose
+    )
+
     # Import root-level (dataset-wide) events.json
     # Assumption: Single project for project-wide tags
     bids_layout = bids_reader.bids_layout
@@ -266,8 +273,13 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
             bids_layout.root,
             ""
         )
-        event_metadata_path = loris_bids_root_dir + copy_file.lstrip('/')
-        lib.utilities.copy_file(root_event_metadata_file.path, event_metadata_path, verbose)
+        relative_bids_dir = str.replace(
+            loris_bids_root_dir,
+            data_dir,
+            ""
+        )
+        event_metadata_path = relative_bids_dir + copy_file.lstrip('/')
+        lib.utilities.copy_file(root_event_metadata_file.path, data_dir + event_metadata_path, verbose)
 
 
         # TODO: Move
@@ -293,16 +305,24 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
     for row in bids_reader.cand_session_modalities_list:
         bids_session = row['bids_ses_id']
         visit_label  = bids_session if bids_session else default_bids_vl
-        loris_bids_visit_rel_dir    = 'sub-' + row['bids_sub_id'] + '/' + 'ses-' + visit_label
+        bids_sub_id = row['bids_sub_id']
+        loris_bids_visit_rel_dir    = 'sub-' + bids_sub_id + '/' + 'ses-' + visit_label
 
         for modality in row['modalities']:
             loris_bids_modality_rel_dir = loris_bids_visit_rel_dir + '/' + modality + '/'
-            lib.utilities.create_dir(loris_bids_root_dir + loris_bids_modality_rel_dir, verbose)
+            lib.utilities.create_dir(
+                loris_bids_root_dir +
+                loris_bids_modality_rel_dir.replace(
+                    bids_sub_id,
+                    single_project_alias + bids_sub_id
+                ),
+                verbose
+            )
 
             if modality == 'eeg' or modality == 'ieeg':
                 Eeg(
                     bids_reader   = bids_reader,
-                    bids_sub_id   = row['bids_sub_id'],
+                    bids_sub_id   = bids_sub_id,
                     bids_ses_id   = row['bids_ses_id'],
                     bids_modality = modality,
                     project_alias = single_project_alias,
@@ -319,7 +339,7 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
             elif modality in ['anat', 'dwi', 'fmap', 'func']:
                 Mri(
                     bids_reader   = bids_reader,
-                    bids_sub_id   = row['bids_sub_id'],
+                    bids_sub_id   = bids_sub_id,
                     bids_ses_id   = row['bids_ses_id'],
                     bids_modality = modality,
                     project_alias = single_project_alias,
@@ -331,6 +351,7 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
                     loris_bids_root_dir    = loris_bids_root_dir
                 )
 
+    # TODO RENAME, COPY, THEN EDIT SCANS.TSV
     # disconnect from the database
     db.disconnect()
 
@@ -449,7 +470,7 @@ def grep_or_create_candidate_db_info(bids_reader, bids_id,        db,
         )
 
     # create the candidate's directory in the LORIS BIDS import directory
-    lib.utilities.create_dir(loris_bids_dir + "sub-" + bids_id, verbose)
+    lib.utilities.create_dir(loris_bids_dir + "sub-" + psc_id, verbose)
 
     return loris_cand_info
 
@@ -494,10 +515,16 @@ def grep_or_create_session_db_info(
     if not loris_vl_info and createvisit:
         loris_vl_info = session.create_session()
 
+    project_alias = db.pselect(
+        "SELECT Alias FROM Project WHERE ProjectID = %s",
+        [project_id, ]
+    )
+    project_alias = project_alias[0]['Alias']
+
     # create the visit directory for in the candidate folder of the LORIS
     # BIDS import directory
     lib.utilities.create_dir(
-        loris_bids_dir + "sub-" + bids_id + "/ses-" + visit_label,
+        loris_bids_dir + "sub-" + project_alias + bids_id + "/ses-" + visit_label,
         verbose
     )
 

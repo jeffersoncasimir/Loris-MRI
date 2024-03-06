@@ -6,7 +6,6 @@ from dateutil.parser import parse
 import lib
 import lib.utilities as utilities
 
-
 __license__ = "GPLv3"
 
 
@@ -38,7 +37,7 @@ class ScansTSV:
         self.verbose = verbose
 
         # store files' paths
-        self.scans_tsv_file   = scans_tsv_file
+        self.scans_tsv_file = scans_tsv_file
         self.acquisition_file = acquisition_file
 
         # read the TSV file and store the header names and data
@@ -81,7 +80,7 @@ class ScansTSV:
                 else:
                     print('More than one or no acquisition time has been found for ', self.acquisition_file)
                     exit()
-            else: 
+            else:
                 eeg_acq_time = self.acquisition_data['acq_time']
 
             if eeg_acq_time == 'n/a':
@@ -119,7 +118,8 @@ class ScansTSV:
     def copy_scans_tsv_file_to_loris_bids_dir(self, bids_sub_id, loris_bids_root_dir, data_dir):
 
         original_file_path = self.scans_tsv_file
-        final_file_path = loris_bids_root_dir + '/sub-' + bids_sub_id + '/' + os.path.basename(self.scans_tsv_file)
+        final_file_path = loris_bids_root_dir + '/sub-' + bids_sub_id + '/' \
+                          + os.path.basename(self.scans_tsv_file).replace('sub-', 'sub-' + bids_sub_id[0:3])
 
         # copy the scans.tsv file to the new directory
         if os.path.exists(final_file_path):
@@ -127,7 +127,13 @@ class ScansTSV:
         else:
             lib.utilities.copy_file(original_file_path, final_file_path, self.verbose)
 
-        # determine the relative path and return it
-        relative_path = final_file_path.replace(data_dir, "")
+        # Modify filename row
+        lib.utilities.inject_project_code_in_tsv(
+            final_file_path,
+            bids_sub_id[0:3],
+            "filename",
+            self.verbose
+        )
 
-        return relative_path
+        # Return relative path
+        return  final_file_path.replace(data_dir, "")

@@ -152,7 +152,7 @@ class Eeg:
         self.cohort_id      = None
 
         for row in bids_reader.participants_info:
-            if not row['participant_id'] == self.bids_sub_id:
+            if not row['participant_id'] == bids_sub_id:
                 continue
             self.cand_age = int(row['age'])
             if 'cohort' in row:
@@ -446,7 +446,7 @@ class Eeg:
 
                 # copy the scans.tsv file to the LORIS BIDS import directory
                 scans_path = scan_info.copy_scans_tsv_file_to_loris_bids_dir(
-                    self.bids_sub_id, self.loris_bids_root_dir, self.data_dir
+                    self.project_alias + self.bids_sub_id, self.loris_bids_root_dir, self.data_dir
                 )
 
                 eeg_file_data['scans_tsv_file'] = scans_path
@@ -824,7 +824,10 @@ class Eeg:
                 self.bids_layout.root,
                 ""
             )
-            copy_file = self.loris_bids_root_dir + copy_file
+            copy_file = self.loris_bids_root_dir + copy_file.replace(
+                self.bids_sub_id,
+                self.project_alias + self.bids_sub_id
+            )
 
             # create derivative directories
             lib.utilities.create_dir(
@@ -846,7 +849,10 @@ class Eeg:
                     "sub-" + self.bids_sub_id,
                     "sub-" + self.bids_sub_id + "_ses-" + self.default_vl
                 )
-            copy_file = self.loris_bids_root_dir + copy_file
+            copy_file = self.loris_bids_root_dir + copy_file.replace(
+                self.bids_sub_id,
+                self.project_alias + self.bids_sub_id
+            )
 
         # copy the file
         utilities.copy_file(file, copy_file, self.verbose)

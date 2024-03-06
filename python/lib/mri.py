@@ -104,7 +104,7 @@ class Mri:
         self.data_dir               = data_dir
 
         # load BIDS subject, visit and modality
-        self.bids_sub_id   = bids_sub_id
+        self.bids_sub_id   = project_alias + bids_sub_id
         self.bids_ses_id   = bids_ses_id
         self.bids_modality = bids_modality
 
@@ -132,9 +132,8 @@ class Mri:
                 if len(cohort_info) > 0:
                     self.cohort_id = cohort_info[0]['CohortID']
             break
-        
-        self.session_id      = self.get_loris_session_id()
 
+        self.session_id      = self.get_loris_session_id()
         # grep all the NIfTI files for the modality
         self.nifti_files = self.grep_nifti_files()
 
@@ -144,6 +143,7 @@ class Mri:
             self.scans_file = self.bids_layout.get(suffix='scans', subject=self.psc_id, 
                                                    return_type='filename', extension='tsv')[0]
 
+        print(self.scans_file)
         # loop through NIfTI files and register them in the DB
         for nifti_file in self.nifti_files:
             self.register_raw_file(nifti_file)
