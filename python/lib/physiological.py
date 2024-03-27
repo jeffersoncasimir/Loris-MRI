@@ -24,7 +24,6 @@ from lib.point_3d import Point3D
 
 __license__ = "GPLv3"
 
-
 class Physiological:
     """
     This class performs database queries for BIDS physiological dataset (EEG,
@@ -675,34 +674,53 @@ class Physiological:
 
         for parameter in event_metadata:
             parameter_name = parameter
-            tag_dict[parameter_name] = {}
-            description = event_metadata[parameter]['Description'] \
-                if 'Description' in event_metadata[parameter] \
-                else None
-            long_name = event_metadata[parameter]['LongName'] if 'LongName' in event_metadata[parameter] else None
-            units = event_metadata[parameter]['Units'] if 'Units' in event_metadata[parameter] else None
-            if 'Levels' in event_metadata[parameter]:
-                is_categorical = 'Y'
-                value_hed = None
+
+            if project_wide and parameter_name == 'channel':     # Include and convert channelS?
+                description = 'Channel(s) associated with an event.'
+                delimiter_key = 'Delimiter'
+                if delimiter_key in event_metadata[parameter]:
+                    channel_delimiter = event_metadata[parameter][delimiter_key]
+
+                    parameter_type_id = self.get_parameter_type_id('ChannelDelimiter')
+
+                    if parameter_type_id:
+                        return self.db.insert(
+                            table_name='parameter_project',
+                            column_names=('ProjectID', 'ParameterTypeID', 'Value'),
+                            values=(target_id, parameter_type_id, channel_delimiter)
+                        )
+
+                # TODO: Confirm is skipping HED for channels
+                # TODO: Eventually include the _session level override
             else:
-                is_categorical = 'N'
-                value_hed = event_metadata[parameter]['HED'] if 'HED' in event_metadata[parameter] else None
+                tag_dict[parameter_name] = {}
+                description = event_metadata[parameter]['Description'] \
+                    if 'Description' in event_metadata[parameter] \
+                    else None
+                long_name = event_metadata[parameter]['LongName'] if 'LongName' in event_metadata[parameter] else None
+                units = event_metadata[parameter]['Units'] if 'Units' in event_metadata[parameter] else None
+                if 'Levels' in event_metadata[parameter]:
+                    is_categorical = 'Y'
+                    value_hed = None
+                else:
+                    is_categorical = 'N'
+                    value_hed = event_metadata[parameter]['HED'] if 'HED' in event_metadata[parameter] else None
 
-            if is_categorical == 'Y':
-                for level in event_metadata[parameter]['Levels']:
-                    level_name = level
-                    tag_dict[parameter_name][level_name] = []
-                    level_description = event_metadata[parameter]['Levels'][level]
-                    level_hed = event_metadata[parameter]['HED'][level] \
-                        if 'HED' in event_metadata[parameter] and level in event_metadata[parameter]['HED'] \
-                        else None
+                if is_categorical == 'Y':
+                    for level in event_metadata[parameter]['Levels']:
+                        level_name = level
+                        tag_dict[parameter_name][level_name] = []
+                        level_description = event_metadata[parameter]['Levels'][level]
+                        level_hed = event_metadata[parameter]['HED'][level] \
+                            if 'HED' in event_metadata[parameter] and level in event_metadata[parameter]['HED'] \
+                            else None
 
-                    if level_hed:
-                        tag_groups = Physiological.build_hed_tag_groups(hed_union, level_hed)
-                        for tag_group in tag_groups:
-                            self.insert_hed_tag_group(tag_group, target_id, parameter_name,
-                                                      level_name, level_description, True, project_wide)
-                        tag_dict[parameter_name][level_name] = tag_groups
+                        if level_hed:
+                            tag_groups = Physiological.build_hed_tag_groups(hed_union, level_hed)
+                            for tag_group in tag_groups:
+                                self.insert_hed_tag_group(tag_group, target_id, parameter_name,
+                                                          level_name, level_description, True, project_wide)
+                            tag_dict[parameter_name][level_name] = tag_groups
         return tag_dict
 
     @staticmethod
@@ -987,13 +1005,14 @@ class Physiological:
         event_fields = (
             'PhysiologicalFileID', 'Onset',     'Duration',   'TrialType',
             'ResponseTime',        'EventCode', 'EventValue', 'EventSample',
-            'EventType',           'FilePath',  'EventFileID'
+            'EventType',           'FilePath',  'EventFileID', 'Channel'
         )
         # known opt fields
         optional_fields = (
             'trial_type', 'response_time', 'event_code',
             'event_value', 'event_sample', 'event_type',
-            'value', 'sample', 'duration', 'onset', 'HED'
+            'value', 'sample', 'duration', 'onset', 'HED',
+            'channel'   # TODO: Remove value
         )
         # all listed fields
         known_fields = {*event_fields, *optional_fields}
@@ -1053,6 +1072,14 @@ class Physiological:
             if row['trial_type']:
                 trial_type = str(row['trial_type'])
 
+            channel = 'all'
+            if row['channel']:
+                # channel = row['channel'].split(
+                #     '' if channel_delimiter is None
+                #     else channel_delimiter
+                # ) Splitting not necessary unless changing
+                channel = row['channel']
+
             # insert one event and get its db id
             last_task_id = self.physiological_task_event.insert(
                 physiological_file_id=physiological_file_id,
@@ -1065,6 +1092,7 @@ class Physiological:
                 event_type=row['event_type'],
                 trial_type=trial_type,
                 response_time=response_time,
+                channel=channel
             )
 
             # Insert HED tags after filtering out inherited tags from events.json, so that they are not "duplicated"

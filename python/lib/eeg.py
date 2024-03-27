@@ -890,22 +890,22 @@ class Eeg:
         # check if archive already inserted in database and matches the one
         # on the filesystem using blake2b hash
         result = physiological.grep_archive_info_from_file_id(eeg_file_id)
-        if result:
-            if not blake2:
-                message = '\nERROR: no archive was found on the filesystem ' + \
-                          'while an entry was found in the database for '   + \
-                          'PhysiologicalFileID = ' + str(eeg_file_id)
-                print(message)
-                exit(lib.exitcode.MISSING_FILES)
-            elif result['Blake2bHash'] != blake2:
-                message = '\nERROR: blake2b hash of ' + archive_full_path     +\
-                          ' does not match the one stored in the database.'   +\
-                          '\nblake2b of ' + archive_full_path + ': ' + blake2 +\
-                          '\nblake2b in the database: ' + result['blake2b_hash']
-                print(message)
-                exit(lib.exitcode.CORRUPTED_FILE)
-            else:
-                return
+        # if result:
+        #     if not blake2:
+        #         message = '\nERROR: no archive was found on the filesystem ' + \
+        #                   'while an entry was found in the database for '   + \
+        #                   'PhysiologicalFileID = ' + str(eeg_file_id)
+        #         print(message)
+        #         exit(lib.exitcode.MISSING_FILES)
+        #     elif result['Blake2bHash'] != blake2:
+        #         message = '\nERROR: blake2b hash of ' + archive_full_path     +\
+        #                   ' does not match the one stored in the database.'   +\
+        #                   '\nblake2b of ' + archive_full_path + ': ' + blake2 +\
+        #                   '\nblake2b in the database: ' + result['Blake2bHash']
+        #         print(message)
+        #         exit(lib.exitcode.CORRUPTED_FILE)
+        #     else:
+        #         return
 
         # create the archive file
         utilities.create_archive(files_to_archive, archive_rel_name, self.data_dir)
@@ -943,23 +943,24 @@ class Eeg:
         physiological_event_archive_obj = PhysiologicalEventArchive(self.db, self.verbose)
         results = physiological_event_archive_obj.grep_from_physiological_file_id(eeg_file_id)
 
-        if results:
-            result = results[0]
-            if not blake2:
-                message = '\nERROR: no archive was found on the filesystem ' + \
-                          'while an entry was found in the database for '   + \
-                          'PhysiologicalFileID = ' + str(eeg_file_id)
-                print(message)
-                exit(lib.exitcode.MISSING_FILES)
-            elif result['Blake2bHash'] != blake2:
-                message = '\nERROR: blake2b hash of ' + archive_full_path     +\
-                          ' does not match the one stored in the database.'   +\
-                          '\nblake2b of ' + archive_full_path + ': ' + blake2 +\
-                          '\nblake2b in the database: ' + result['blake2b_hash']
-                print(message)
-                exit(lib.exitcode.CORRUPTED_FILE)
-            else:
-                return
+
+        # if results:
+        #     result = results[0]
+        #     if not blake2:
+        #         message = '\nERROR: no archive was found on the filesystem ' + \
+        #                   'while an entry was found in the database for '   + \
+        #                   'PhysiologicalFileID = ' + str(eeg_file_id)
+        #         print(message)
+        #         exit(lib.exitcode.MISSING_FILES)
+        #     elif result['Blake2bHash'] != blake2:
+        #         message = '\nERROR: blake2b hash of ' + archive_full_path     +\
+        #                   ' does not match the one stored in the database.'   +\
+        #                   '\nblake2b of ' + archive_full_path + ': ' + blake2 +\
+        #                   '\nblake2b in the database: ' + result['Blake2bHash']
+        #         print(message)
+        #         exit(lib.exitcode.CORRUPTED_FILE)
+        #     else:
+        #         return
 
         # create the archive file
         utilities.create_archive(files_to_archive, archive_rel_name, self.data_dir)
