@@ -21,8 +21,8 @@ from lib.database_lib.physiological_coord_system import PhysiologicalCoordSystem
 from lib.database_lib.point_3d import Point3DDB
 from lib.point_3d import Point3D
 
-
 __license__ = "GPLv3"
+
 
 class Physiological:
     """
@@ -64,17 +64,17 @@ class Physiological:
          :type verbose: bool
         """
 
-        self.db      = db
+        self.db = db
         self.verbose = verbose
 
-        self.physiological_event_file_obj                   = PhysiologicalEventFile(self.db, self.verbose)
-        self.physiological_task_event                       = PhysiologicalTaskEvent(self.db, self.verbose)
-        self.physiological_task_event_opt                   = PhysiologicalTaskEventOpt(self.db, self.verbose)
-        self.physiological_task_event_hed_rel               = PhysiologicalTaskEventHEDRel(self.db, self.verbose)
-        self.bids_event_mapping_obj                         = BidsEventMapping(self.db, self.verbose)
-        self.physiological_physiological_file_obj           = PhysiologicalFile(self.db, self.verbose)
-        self.physiological_physiological_parameter_file     = PhysiologicalParameterFile(self.db, self.verbose)
-        self.parameter_type_obj                             = ParameterType(self.db, self.verbose)
+        self.physiological_event_file_obj = PhysiologicalEventFile(self.db, self.verbose)
+        self.physiological_task_event = PhysiologicalTaskEvent(self.db, self.verbose)
+        self.physiological_task_event_opt = PhysiologicalTaskEventOpt(self.db, self.verbose)
+        self.physiological_task_event_hed_rel = PhysiologicalTaskEventHEDRel(self.db, self.verbose)
+        self.bids_event_mapping_obj = BidsEventMapping(self.db, self.verbose)
+        self.physiological_physiological_file_obj = PhysiologicalFile(self.db, self.verbose)
+        self.physiological_physiological_parameter_file = PhysiologicalParameterFile(self.db, self.verbose)
+        self.parameter_type_obj = ParameterType(self.db, self.verbose)
         self.physiological_coord_system_db = PhysiologicalCoordSystem(self.db, self.verbose)
         self.point_3d_db = Point3DDB(self.db, self.verbose)
 
@@ -105,7 +105,7 @@ class Physiological:
         # exits if could not find a file type
         if not file_type:
             message = "\nERROR: File type for " + file + " does not exist " \
-                      "in ImagingFileTypes database table\n"
+                                                         "in ImagingFileTypes database table\n"
             print(message)
             sys.exit(lib.exitcode.SELECT_FAILURE)
 
@@ -193,8 +193,8 @@ class Physiological:
             query="SELECT ProjectID "
                   "FROM session AS s "
                   "WHERE s.ID = ("
-                      "SELECT SessionID FROM physiological_file "
-                      "WHERE PhysiologicalFileID = %s"
+                  "SELECT SessionID FROM physiological_file "
+                  "WHERE PhysiologicalFileID = %s"
                   ")",
             args=(physiological_file_id,)
         )
@@ -229,7 +229,7 @@ class Physiological:
                 'Name', 'Type', 'Description', 'SourceFrom', 'Queryable'
             ]
             parameter_desc = parameter_name + " magically created by lib.physiological python class"
-            source_from    = 'physiological_parameter_file'
+            source_from = 'physiological_parameter_file'
             values = [
                 parameter_name, 'text', parameter_desc, source_from, 0
             ]
@@ -262,14 +262,14 @@ class Physiological:
         """
 
         results = self.db.pselect(
-            query = "SELECT * "
-                    "FROM physiological_electrode "
-                    "WHERE PhysiologicalElectrodeID "
-                    "IN ("
-                    "    SELECT PhysiologicalElectrodeID "
-                    "    FROM physiological_coord_system_electrode_rel "
-                    "    WHERE PhysiologicalFileID = %s)",
-            args  = (physiological_file_id,)
+            query="SELECT * "
+                  "FROM physiological_electrode "
+                  "WHERE PhysiologicalElectrodeID "
+                  "IN ("
+                  "    SELECT PhysiologicalElectrodeID "
+                  "    FROM physiological_coord_system_electrode_rel "
+                  "    WHERE PhysiologicalFileID = %s)",
+            args=(physiological_file_id,)
         )
 
         return results
@@ -288,10 +288,10 @@ class Physiological:
         """
 
         results = self.db.pselect(
-            query = "SELECT * "
-                    " FROM physiological_channel "
-                    " WHERE PhysiologicalFileID = %s",
-            args  = (physiological_file_id,)
+            query="SELECT * "
+                  " FROM physiological_channel "
+                  " WHERE PhysiologicalFileID = %s",
+            args=(physiological_file_id,)
         )
 
         return results
@@ -308,9 +308,9 @@ class Physiological:
         """
 
         event_paths = self.db.pselect(
-            query = "SELECT DISTINCT FilePath "
-                    "FROM physiological_event_file "
-                    "WHERE PhysiologicalFileID = %s",
+            query="SELECT DISTINCT FilePath "
+                  "FROM physiological_event_file "
+                  "WHERE PhysiologicalFileID = %s",
             args=(physiological_file_id,)
         )
 
@@ -355,19 +355,19 @@ class Physiological:
 
                 if field == 'type':
                     row['type_id'] = self.db.grep_id_from_lookup_table(
-                        id_field_name       = 'PhysiologicalElectrodeTypeID',
-                        table_name          = 'physiological_electrode_type',
-                        where_field_name    = 'ElectrodeType',
-                        where_value         = row['type'],
-                        insert_if_not_found = True
+                        id_field_name='PhysiologicalElectrodeTypeID',
+                        table_name='physiological_electrode_type',
+                        where_field_name='ElectrodeType',
+                        where_value=row['type'],
+                        insert_if_not_found=True
                     )
                 if field == 'material':
                     row['material_id'] = self.db.grep_id_from_lookup_table(
-                        id_field_name       = 'PhysiologicalElectrodeMaterialID',
-                        table_name          = 'physiological_electrode_material',
-                        where_field_name    = 'ElectrodeMaterial',
-                        where_value         = row['material'],
-                        insert_if_not_found = True
+                        id_field_name='PhysiologicalElectrodeMaterialID',
+                        table_name='physiological_electrode_material',
+                        where_field_name='ElectrodeMaterial',
+                        where_value=row['material'],
+                        insert_if_not_found=True
                     )
 
             # map the X, Y and Z 'n/a' values to NULL
@@ -389,10 +389,10 @@ class Physiological:
             electrode_values.append(values_tuple)
 
             inserted_electrode_id = self.db.insert(
-                table_name   = 'physiological_electrode',
-                column_names = electrode_fields,
-                values       = values_tuple,
-                get_last_id  = True
+                table_name='physiological_electrode',
+                column_names=electrode_fields,
+                values=values_tuple,
+                get_last_id=True
             )
             electrode_ids.append(inserted_electrode_id)
 
@@ -422,36 +422,36 @@ class Physiological:
         """
 
         channel_fields = (
-            'PhysiologicalFileID',       'PhysiologicalChannelTypeID',
+            'PhysiologicalFileID', 'PhysiologicalChannelTypeID',
             'PhysiologicalStatusTypeID', 'Name',
-            'Description',               'SamplingFrequency',
-            'LowCutoff',                 'HighCutoff',
-            'ManualFlag',                'Notch',
-            'StatusDescription',         'Unit',
-            'Reference',                 'FilePath'
+            'Description', 'SamplingFrequency',
+            'LowCutoff', 'HighCutoff',
+            'ManualFlag', 'Notch',
+            'StatusDescription', 'Unit',
+            'Reference', 'FilePath'
         )
         channel_values = []
         for row in channel_data:
             physio_channel_type_id = self.db.grep_id_from_lookup_table(
-                id_field_name       = 'PhysiologicalChannelTypeID',
-                table_name          = 'physiological_channel_type',
-                where_field_name    = 'ChannelTypeName',
-                where_value         = row['type'],
-                insert_if_not_found = False
+                id_field_name='PhysiologicalChannelTypeID',
+                table_name='physiological_channel_type',
+                where_field_name='ChannelTypeName',
+                where_value=row['type'],
+                insert_if_not_found=False
             )
             physio_status_type_id = None
             if 'status' in row.keys():
                 physio_status_type_id = self.db.grep_id_from_lookup_table(
-                    id_field_name       = 'PhysiologicalStatusTypeID',
-                    table_name          = 'physiological_status_type',
-                    where_field_name    = 'ChannelStatus',
-                    where_value         = row['status'],
-                    insert_if_not_found = False
+                    id_field_name='PhysiologicalStatusTypeID',
+                    table_name='physiological_status_type',
+                    where_field_name='ChannelStatus',
+                    where_value=row['status'],
+                    insert_if_not_found=False
                 )
             optional_fields = (
-                'description',        'sampling_frequency', 'low_cutoff',
-                'high_cutoff',        'manual',             'notch',
-                'status_description', 'units',              'reference'
+                'description', 'sampling_frequency', 'low_cutoff',
+                'high_cutoff', 'manual', 'notch',
+                'status_description', 'units', 'reference'
             )
             for field in optional_fields:
                 if field not in row.keys():
@@ -490,9 +490,9 @@ class Physiological:
             channel_values.append(values_tuple)
 
         self.db.insert(
-            table_name   = 'physiological_channel',
-            column_names = channel_fields,
-            values       = channel_values
+            table_name='physiological_channel',
+            column_names=channel_fields,
+            values=channel_values
         )
 
         # insert blake2b hash of channel file into physiological_parameter_file
@@ -587,7 +587,7 @@ class Physiological:
                 raise KeyError
             ref_coords = electrode_metadata[f'{coord_system_type}Coordinates']
             ref_points = {
-                ref_key : Point3D(None, *ref_val)
+                ref_key: Point3D(None, *ref_val)
                 for ref_key, ref_val in ref_coords.items()
             }
         except (IndexError, KeyError):
@@ -674,8 +674,8 @@ class Physiological:
 
         for parameter in event_metadata:
             parameter_name = parameter
-
-            if project_wide and parameter_name == 'channel':     # Include and convert channelS?
+            print(parameter)
+            if project_wide and parameter_name == 'channel':  # Include and convert channelS?
                 description = 'Channel(s) associated with an event.'
                 delimiter_key = 'Delimiter'
                 if delimiter_key in event_metadata[parameter]:
@@ -684,7 +684,7 @@ class Physiological:
                     parameter_type_id = self.get_parameter_type_id('ChannelDelimiter')
 
                     if parameter_type_id:
-                        return self.db.insert(
+                        self.db.insert(
                             table_name='parameter_project',
                             column_names=('ProjectID', 'ParameterTypeID', 'Value'),
                             values=(target_id, parameter_type_id, channel_delimiter)
@@ -756,10 +756,10 @@ class Physiological:
 
     @dataclass
     class TagGroupMember:
-        hed_tag_id: int #| None -- To add back with python version upgrade
+        hed_tag_id: int  # | None -- To add back with python version upgrade
         has_pairing: bool
         additional_members: int
-        tag_value: str = None #| None = None
+        tag_value: str = None  # | None = None
 
         def __eq__(self, other):
             return self.hed_tag_id == other.hed_tag_id and \
@@ -805,21 +805,23 @@ class Physiological:
             num_opening_parentheses = len(right_stripped) - len(left_stripped)
 
             has_pairing = element.startswith('(') and (
-                group_depth == 0 or not element.endswith(')')
+                    group_depth == 0 or not element.endswith(')')
             )
 
             if has_pairing:
-                additional_members = Physiological.get_additional_members_from_parenthesis_index(string_split, 1, element_index)
+                additional_members = Physiological.get_additional_members_from_parenthesis_index(string_split, 1,
+                                                                                                 element_index)
 
             hed_tag_id = Physiological.get_hed_tag_id_from_name(left_stripped, hed_union)
             tag_group.append(Physiological.TagGroupMember(hed_tag_id, has_pairing, additional_members))
 
             for i in range(
-                0 if group_depth > 0 and element.startswith('(') and element.endswith(')') else 1,
-                num_opening_parentheses
+                    0 if group_depth > 0 and element.startswith('(') and element.endswith(')') else 1,
+                    num_opening_parentheses
             ):
                 has_pairing = True
-                additional_members = Physiological.get_additional_members_from_parenthesis_index(string_split, i + 1, element_index)
+                additional_members = Physiological.get_additional_members_from_parenthesis_index(string_split, i + 1,
+                                                                                                 element_index)
                 tag_group.append(Physiological.TagGroupMember(None, has_pairing, additional_members))
             group_depth += (len(element) - len(right_stripped))
             group_depth -= num_opening_parentheses
@@ -827,7 +829,6 @@ class Physiological:
             tag_groups.append(tag_group)
 
         return tag_groups
-
 
     def insert_hed_tag_group(self, hed_tag_group, target_id, property_name=None, property_value=None,
                              level_description=None, from_sidecar=False, project_wide=False):
@@ -892,8 +893,8 @@ class Physiological:
         standardized_row = {}
         recognized_event_fields = [
             'Onset', 'Duration', 'TrialType',
-            'ResponseTime', 'EventCode',
-            'EventSample', 'EventType'
+            'ResponseTime', 'EventCode', 'EventValue',
+            'EventSample', 'EventType', 'Channel'
         ]
         for column_name in row:
             column_value = row[column_name]
@@ -908,6 +909,9 @@ class Physiological:
                 column = 'EventValue' if (column_name == 'value' or column_name == 'event_value') else column_name
             standardized_row[column] = column_value
 
+        print(row)
+        print(row.keys())
+        print(standardized_row)
         return standardized_row
 
     @staticmethod
@@ -930,6 +934,9 @@ class Physiological:
         # TODO: Overwrite dataset tags with file tags
         # Only dataset tags currently supported until overwrite
         standardized_row = Physiological.standardize_row_columns(row)
+
+        for column_name in standardized_row:
+            print(standardized_row[column_name])
         inherited_tag_groups = reduce(lambda a, b: a + b, [
             dataset_tag_dict[column_name][standardized_row[column_name]]
             for column_name in standardized_row
@@ -960,7 +967,6 @@ class Physiological:
                     raise
                 hed_tag_id = hed_tag['ID']
         return hed_tag_id
-
 
     def insert_event_file(self, event_data, event_file, physiological_file_id,
                           project_id, blake2, dataset_tag_dict, file_tag_dict,
@@ -994,7 +1000,6 @@ class Physiological:
          :type hed_union            : any
         """
 
-
         event_file_id = self.physiological_event_file_obj.insert(
             physiological_file_id,
             project_id,
@@ -1003,16 +1008,16 @@ class Physiological:
         )
 
         event_fields = (
-            'PhysiologicalFileID', 'Onset',     'Duration',   'TrialType',
-            'ResponseTime',        'EventCode', 'EventValue', 'EventSample',
-            'EventType',           'FilePath',  'EventFileID', 'Channel'
+            'PhysiologicalFileID', 'Onset', 'Duration', 'TrialType',
+            'ResponseTime', 'EventCode', 'EventValue', 'EventSample',
+            'EventType', 'FilePath', 'EventFileID', 'Channel'
         )
         # known opt fields
         optional_fields = (
             'trial_type', 'response_time', 'event_code',
             'event_value', 'event_sample', 'event_type',
             'value', 'sample', 'duration', 'onset', 'HED',
-            'channel'   # TODO: Remove value
+            'channel'  # TODO: Remove value
         )
         # all listed fields
         known_fields = {*event_fields, *optional_fields}
@@ -1025,7 +1030,7 @@ class Physiological:
 
             # has additional fields?
             additional_fields = {}
-            for field in row:
+            for field in row.keys():
                 if field not in known_fields and row[field].lower() != 'nan':
                     additional_fields[field] = row[field]
 
@@ -1158,9 +1163,9 @@ class Physiological:
             archive_fields = archive_fields + (key,)
             archive_values = archive_values + (value,)
         self.db.insert(
-            table_name   = 'physiological_archive',
-            column_names = archive_fields,
-            values       = archive_values
+            table_name='physiological_archive',
+            column_names=archive_fields,
+            values=archive_values
         )
 
     def grep_parameter_value_from_file_id(self, physiological_file_id, param_name):
@@ -1183,8 +1188,8 @@ class Physiological:
                 "WHERE PhysiologicalFileID = %s AND Name = %s"
 
         results = self.db.pselect(
-            query = query,
-            args  = (physiological_file_id, param_name)
+            query=query,
+            args=(physiological_file_id, param_name)
         )
 
         # return the result
@@ -1245,7 +1250,7 @@ class Physiological:
         """
 
         # check if chunks already exists for this PhysiologicalFileID
-        results    = self.grep_parameter_value_from_file_id(
+        results = self.grep_parameter_value_from_file_id(
             physio_file_id, 'electrophyiology_chunked_dataset_path'
         )
         chunk_path = results['Value'] if results else None
@@ -1253,14 +1258,14 @@ class Physiological:
         print('Creating chunks for {}'.format(physio_file_id))
 
         # determine which script to run based on the file type
-        command   = None
-        script    = None
+        command = None
+        script = None
         if not chunk_path:
-            file_type    = self.grep_file_type_from_file_id(physio_file_id)
-            file_path    = self.grep_file_path_from_file_id(physio_file_id)
+            file_type = self.grep_file_type_from_file_id(physio_file_id)
+            file_path = self.grep_file_path_from_file_id(physio_file_id)
             # the bids_rel_dir is the first two directories in file_path (
             # bids_imports/BIDS_dataset_name_BIDSVersion)
-            bids_rel_dir   = file_path.split('/')[0] + '/' + file_path.split('/')[1]
+            bids_rel_dir = file_path.split('/')[0] + '/' + file_path.split('/')[1]
             chunk_root_dir = data_dir + bids_rel_dir + '_chunks' + '/'
             # the final chunk path will be /data/%PROJECT%/data/bids_imports
             # /BIDS_dataset_name_BIDSVersion_chunks/EEG_FILENAME.chunks
@@ -1278,8 +1283,8 @@ class Physiological:
             try:
                 subprocess.call(
                     command,
-                    shell = True,
-                    stdout = open(os.devnull, 'wb')
+                    shell=True,
+                    stdout=open(os.devnull, 'wb')
                 )
             except subprocess.CalledProcessError as err:
                 print(f'ERROR: {script} execution failure. Error was:\n {err}')
@@ -1290,9 +1295,9 @@ class Physiological:
 
             if os.path.isdir(chunk_path):
                 self.insert_physio_parameter_file(
-                    physiological_file_id = physio_file_id,
-                    parameter_name = 'electrophyiology_chunked_dataset_path',
-                    value = chunk_path.replace(data_dir, '')
+                    physiological_file_id=physio_file_id,
+                    parameter_name='electrophyiology_chunked_dataset_path',
+                    value=chunk_path.replace(data_dir, '')
                 )
 
     def create_chunks_for_visualization_on_cbrain(self, physio_file_id, data_dir):
@@ -1339,5 +1344,5 @@ class Physiological:
                 self.db.insert(
                     table_name='physiological_chunk_process',
                     column_names=('PhysiologicalFileID', 'InputFilePath', 'Destination'),
-                    values   	= (physio_file_id, data_dir + file_path, chunk_root_dir)
+                    values   = (physio_file_id, data_dir + file_path, chunk_root_dir)
                 )

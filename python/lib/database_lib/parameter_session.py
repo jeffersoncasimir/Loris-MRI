@@ -1,15 +1,15 @@
-"""This class performs database queries for the parameter_project table"""
+"""This class performs database queries for the parameter_session table"""
 
 from lib.database_lib.parameter_type import ParameterType
 
 __license__ = "GPLv3"
 
 
-class ParameterProject:
+class ParameterSession:
 
     def __init__(self, db, verbose):
         """
-        Constructor method for the ParameterProject class.
+        Constructor method for the ParameterSession class.
 
         :param db                 : Database class object
          :type db                 : object
@@ -18,16 +18,16 @@ class ParameterProject:
         """
 
         self.db = db
-        self.table = 'parameter_project'
+        self.table = 'parameter_session'
         self.verbose = verbose
 
-    def insert_channel_delimiter(self, project_id, delimiter):
+    def add_channel_delimiter(self, cand_id, delimiter):
         """
         Adds a ChannelDelimiter `parameter_type` to the
-        `parameter_project` table.
+        `parameter_session` table.
 
-        :param project_id: ProjectID of the dataset
-         :type project_id: int
+        :param cand_id: CandID of the candidate
+         :type cand_id: int
         :param delimiter: Delimiter string
          :type delimiter: str
 
@@ -40,20 +40,20 @@ class ParameterProject:
         if parameter_type_id:
             return self.db.insert(
                 table_name=self.table,
-                column_names=('ProjectID', 'ParameterTypeID', 'Value'),
-                values=(project_id, parameter_type_id, delimiter)
+                column_names=('CandID', 'ParameterTypeID', 'Value'),
+                values=(cand_id, parameter_type_id, delimiter)
             )
 
         if self.verbose:
-            print('Unable to add ChannelDelimiter "{}" to ProjectID {}'.format(delimiter, project_id))
+            print('Unable to add ChannelDelimiter "{}" to CandID {}'.format(cand_id, delimiter))
 
-    def get_channel_delimiter(self, project_id):
+    def get_channel_delimiter(self, cand_id):
         """
         Gets the ChannelDelimiter `parameter_type` from the
-        `parameter_project` table.
+        `parameter_session` table.
 
-        :param project_id: ProjectID of the dataset
-         :type project_id: int
+        :param cand_id: CandID of the candidate
+         :type cand_id: int
 
         :returns: Delimiter string
         """
@@ -63,15 +63,15 @@ class ParameterProject:
 
         if parameter_type_id:
             query = "SELECT Value FROM parameter_type" \
-                    " WHERE ProjectID = %s" \
+                    " WHERE CandID = %s" \
                     " AND ParameterTypeID = %s"
 
             results = self.db.pselect(
                 query=query,
-                args=(project_id, parameter_type_id)
+                args=(cand_id, parameter_type_id)
             )
 
             return results[0]['ChannelDelimiter'] if results else None
 
         if self.verbose:
-            print('Unable to get ChannelDelimiter for ProjectID {}'.format(project_id))
+            print('Unable to get ChannelDelimiter for CandID {}'.format(cand_id))

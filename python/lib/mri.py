@@ -104,7 +104,7 @@ class Mri:
         self.data_dir               = data_dir
 
         # load BIDS subject, visit and modality
-        self.bids_sub_id   = project_alias + bids_sub_id
+        self.bids_sub_id   = bids_sub_id
         self.bids_ses_id   = bids_ses_id
         self.bids_modality = bids_modality
 
@@ -444,13 +444,17 @@ class Mri:
             )
         if derivatives_path:
             # create derivative subject/vl/modality directory
+            # TODO: Insert alias for derivative
             lib.utilities.create_dir(
                 derivatives_path + self.loris_bids_mri_rel_dir,
                 self.verbose
             )
             copy_file = derivatives_path + copy_file
         else:
-            copy_file = self.loris_bids_root_dir + copy_file
+            copy_file = self.loris_bids_root_dir + copy_file.replace(
+                self.bids_sub_id,
+                self.project_alias + self.bids_sub_id
+            )
 
         # copy the file
         utilities.copy_file(file, copy_file, self.verbose)

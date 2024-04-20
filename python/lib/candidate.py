@@ -59,7 +59,7 @@ class Candidate:
 
     def create_candidate(self, db, participant_row):
         """
-        Creates a candidate using BIDS information provided in the
+        Creates a candidate using BIDS information provgetided in the
         participants_info's list.
 
         :param db               : database handler object
