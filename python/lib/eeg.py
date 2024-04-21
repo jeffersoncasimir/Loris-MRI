@@ -154,7 +154,7 @@ class Eeg:
         for row in bids_reader.participants_info:
             if not row['participant_id'] == bids_sub_id:
                 continue
-            self.cand_age = int(row['age'])
+            self.cand_age = int(row['age']) if 'age' in row else None
             if 'cohort' in row:
                 cohort_info = db.pselect(
                     "SELECT CohortID FROM cohort WHERE title = %s",
