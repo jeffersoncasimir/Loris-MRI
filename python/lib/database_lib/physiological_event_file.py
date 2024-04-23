@@ -43,7 +43,7 @@ class PhysiologicalEventFile:
         return self.db.insert(
             table_name   = self.table,
             column_names = ('PhysiologicalFileID', 'FileType', 'FilePath', 'ProjectID'),
-            values       = (physiological_file_id, event_file_type, event_file, 8),
+            values       = (physiological_file_id, event_file_type, event_file, project_id),
             get_last_id  = True
         )
 

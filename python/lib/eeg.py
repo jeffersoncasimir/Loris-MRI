@@ -5,6 +5,10 @@ import re
 import json
 import getpass
 from pyblake2 import blake2b
+from datetime import datetime
+from dateutil.parser import parse as datetime_parse
+from dateutil.relativedelta import relativedelta
+import pytz
 
 import lib.exitcode
 import lib.utilities as utilities
@@ -420,9 +424,6 @@ class Eeg:
             output_type_obj = PhysiologicalOutputType(self.db, self.verbose)
             output_type_id = output_type_obj.grep_id_from_output_type(output_type)
 
-            # Add age_at_scan field (CouchDB_EEG_Importer)
-            eeg_file_data['age_at_scan'] = self.cand_age
-
             # get the acquisition date of the EEG file or the age at the time of the EEG recording
             eeg_acq_time = None
 
@@ -443,6 +444,13 @@ class Eeg:
                         self.loris_cand_info['ID'],
                         derived_dob.strftime('%Y-%m-%d %H:%M:%S')
                     )
+                elif eeg_acq_time and self.cand_age is None:
+                    # Derive Age from Date of Birth and scan acquisition time
+                    years_old = relativedelta(
+                        eeg_acq_time,
+                        pytz.utc.localize(datetime.combine(self.loris_cand_info['DoB'], datetime.min.time()))
+                    ).years
+                    self.cand_age = years_old
 
                 # copy the scans.tsv file to the LORIS BIDS import directory
                 scans_path = scan_info.copy_scans_tsv_file_to_loris_bids_dir(
@@ -452,6 +460,9 @@ class Eeg:
                 eeg_file_data['scans_tsv_file'] = scans_path
                 scans_blake2 = blake2b(self.scans_file.encode('utf-8')).hexdigest()
                 eeg_file_data['physiological_scans_tsv_file_bake2hash'] = scans_blake2
+
+            # Add age_at_scan field (CouchDB_EEG_Importer)
+            eeg_file_data['age_at_scan'] = self.cand_age
 
             # if file type is set and fdt file exists, append fdt path to the
             # eeg_file_data dictionary
