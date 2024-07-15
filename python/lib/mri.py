@@ -321,6 +321,8 @@ class Mri:
         if not derivatives:
             coordinate_space = 'native'
 
+        acquisition_date = None
+
         # get the acquisition date of the MRI or the age at the time of acquisition
         if self.scans_file:
             scan_info = ScansTSV(self.scans_file, nifti_file.filename, self.verbose)
@@ -333,6 +335,7 @@ class Mri:
             file_parameters['scans_tsv_file'] = scans_path
             scans_blake2 = blake2b(self.scans_file.encode('utf-8')).hexdigest()
             file_parameters['scans_tsv_file_bake2hash'] = scans_blake2
+            acquisition_date = scan_info.get_acquisition_time()
 
         # grep voxel step from the NIfTI file header
         step_parameters = imaging.get_nifti_image_step_parameters(nifti_file.path)
@@ -396,7 +399,8 @@ class Mri:
                 'PhaseEncodingDirection': phase_enc_dir,
                 'EchoNumber'      : echo_nb,
                 'SourceFileID'    : None,
-                'AcquisitionProtocolID': scan_type_id
+                'AcquisitionProtocolID': scan_type_id,
+                'AcquisitionDate' : acquisition_date,
             }
             file_id = imaging.insert_imaging_file(file_info, file_parameters)
 
