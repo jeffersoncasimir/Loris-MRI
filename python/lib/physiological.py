@@ -1077,7 +1077,7 @@ class Physiological:
             if row['trial_type']:
                 trial_type = str(row['trial_type'])
 
-            channel = 'all'
+            channel = 'n/a'
             if row['channel']:
                 # channel = row['channel'].split(
                 #     '' if channel_delimiter is None
