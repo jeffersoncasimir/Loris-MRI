@@ -139,11 +139,9 @@ class Mri:
 
         # check if a tsv with acquisition dates or age is available for the subject
         self.scans_file = None
-        if self.bids_layout.get(suffix='scans', subject=self.psc_id, return_type='filename'):
-            self.scans_file = self.bids_layout.get(suffix='scans', subject=self.psc_id, 
+        if self.bids_layout.get(suffix='scans', subject=self.bids_sub_id, return_type='filename'):
+            self.scans_file = self.bids_layout.get(suffix='scans', subject=self.bids_sub_id,
                                                    return_type='filename', extension='tsv')[0]
-
-        print(self.scans_file)
         # loop through NIfTI files and register them in the DB
         for nifti_file in self.nifti_files:
             self.register_raw_file(nifti_file)
@@ -325,12 +323,12 @@ class Mri:
 
         # get the acquisition date of the MRI or the age at the time of acquisition
         if self.scans_file:
-            scan_info = ScansTSV(self.scans_file, nifti_file.filename, self.verbose)
+            scan_info = ScansTSV(self.scans_file, nifti_file.path, self.verbose)
             file_parameters['scan_acquisition_time'] = scan_info.get_acquisition_time()
             file_parameters['age_at_scan'] = scan_info.get_age_at_scan()
             # copy the scans.tsv file to the LORIS BIDS import directory
             scans_path = scan_info.copy_scans_tsv_file_to_loris_bids_dir(
-                self.bids_sub_id, self.loris_bids_root_dir, self.data_dir
+                self.project_alias + self.bids_sub_id, self.loris_bids_root_dir, self.data_dir
             )
             file_parameters['scans_tsv_file'] = scans_path
             scans_blake2 = blake2b(self.scans_file.encode('utf-8')).hexdigest()
@@ -369,6 +367,7 @@ class Mri:
         result    = imaging.grep_file_info_from_hash(blake2)
         file_id   = result['FileID'] if result else None
         file_path = result['File']   if result else None
+
         if not file_id:
             # grep the scan type ID from the mri_scan_type table (if it is not already in
             # the table, it will add a row to the mri_scan_type table)

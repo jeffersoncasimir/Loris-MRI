@@ -71,30 +71,31 @@ class ScansTSV:
             # if no entry in self.acquisition_data, then no information available to get the acquisition time
             return None
 
+        acq_time = 'n/a'
         if 'acq_time' in self.acquisition_data:
             if isinstance(self.tsv_entries, list):
                 acq_time_list = [ele for ele in self.tsv_entries if ele['filename'] in self.acquisition_file]
                 if len(acq_time_list) == 1:
                     # the variable name could be mri_acq_time, but is eeg originally.
-                    eeg_acq_time = acq_time_list[0]['acq_time']
+                    acq_time = acq_time_list[0]['acq_time']
                 else:
                     print('More than one or no acquisition time has been found for ', self.acquisition_file)
                     exit()
             else:
-                eeg_acq_time = self.acquisition_data['acq_time']
+                acq_time = self.acquisition_data['acq_time']
 
-            if eeg_acq_time == 'n/a':
+            if acq_time == 'n/a':
                 return None
 
             try:
-                eeg_acq_time = parse(eeg_acq_time)
+                acq_time = parse(acq_time)
             except ValueError as e:
                 message = "ERROR: could not convert acquisition time '" + \
-                          eeg_acq_time + \
+                          acq_time + \
                           "' to datetime: " + str(e)
                 print(message)
                 exit(lib.exitcode.PROGRAM_EXECUTION_FAILURE)
-            return eeg_acq_time
+            return acq_time
 
         return None
 
