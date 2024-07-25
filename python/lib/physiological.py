@@ -1251,7 +1251,7 @@ class Physiological:
 
         # check if chunks already exists for this PhysiologicalFileID
         results = self.grep_parameter_value_from_file_id(
-            physio_file_id, 'electrophyiology_chunked_dataset_path'
+            physio_file_id, 'electrophysiology_chunked_dataset_path'
         )
         chunk_path = results['Value'] if results else None
 
@@ -1265,7 +1265,7 @@ class Physiological:
             file_path = self.grep_file_path_from_file_id(physio_file_id)
             # the bids_rel_dir is the first two directories in file_path (
             # bids_imports/BIDS_dataset_name_BIDSVersion)
-            bids_rel_dir = file_path.split('/')[0] + '/' + file_path.split('/')[1]
+            bids_rel_dir = file_path.split('/')[0] + '_chunks/' + file_path.split('/')[1]
             chunk_root_dir = data_dir + bids_rel_dir + '_chunks' + '/'
             # the final chunk path will be /data/%PROJECT%/data/bids_imports
             # /BIDS_dataset_name_BIDSVersion_chunks/EEG_FILENAME.chunks
@@ -1296,7 +1296,7 @@ class Physiological:
             if os.path.isdir(chunk_path):
                 self.insert_physio_parameter_file(
                     physiological_file_id=physio_file_id,
-                    parameter_name='electrophyiology_chunked_dataset_path',
+                    parameter_name='electrophysiology_chunked_dataset_path',
                     value=chunk_path.replace(data_dir, '')
                 )
 
@@ -1315,7 +1315,7 @@ class Physiological:
 
         # check if chunks already exists for this PhysiologicalFileID
         results = self.grep_parameter_value_from_file_id(
-            physio_file_id, 'electrophyiology_chunked_dataset_path'
+            physio_file_id, 'electrophysiology_chunked_dataset_path'
         )
         chunk_path = results['Value'] if results else None
 
