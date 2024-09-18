@@ -328,7 +328,7 @@ class Mri:
             file_parameters['age_at_scan'] = scan_info.get_age_at_scan()
             # copy the scans.tsv file to the LORIS BIDS import directory
             scans_path = scan_info.copy_scans_tsv_file_to_loris_bids_dir(
-                self.project_alias + self.bids_sub_id, self.loris_bids_root_dir, self.data_dir
+                self.project_alias + self.bids_sub_id, self.bids_ses_id, self.loris_bids_root_dir, self.data_dir
             )
             file_parameters['scans_tsv_file'] = scans_path
             scans_blake2 = blake2b(self.scans_file.encode('utf-8')).hexdigest()

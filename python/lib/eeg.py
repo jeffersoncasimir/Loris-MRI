@@ -174,8 +174,11 @@ class Eeg:
         # check if a tsv with acquisition dates or age is available for the subject
         self.scans_file = None
         if self.bids_layout.get(suffix='scans', subject=self.bids_sub_id, return_type='filename'):
-            self.scans_file = self.bids_layout.get(suffix='scans', subject=self.bids_sub_id, return_type='filename')[0]
-
+            self.scans_file = self.bids_layout.get(suffix='scans',
+                                                   subject=self.bids_sub_id,
+                                                   session=self.bids_ses_id,
+                                                   return_type='filename'
+                                                   )[0]
         self.create_chunks = create_chunks
 
         # register the data into LORIS
@@ -454,7 +457,7 @@ class Eeg:
 
                 # copy the scans.tsv file to the LORIS BIDS import directory
                 scans_path = scan_info.copy_scans_tsv_file_to_loris_bids_dir(
-                    self.project_alias + self.bids_sub_id, self.loris_bids_root_dir, self.data_dir
+                    self.project_alias + self.bids_sub_id, self.bids_ses_id, self.loris_bids_root_dir, self.data_dir
                 )
 
                 eeg_file_data['scans_tsv_file'] = scans_path

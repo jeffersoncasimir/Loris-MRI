@@ -116,25 +116,22 @@ class ScansTSV:
 
         return None
 
-    def copy_scans_tsv_file_to_loris_bids_dir(self, bids_sub_id, loris_bids_root_dir, data_dir):
-
+    def copy_scans_tsv_file_to_loris_bids_dir(self, bids_sub_id, bids_ses_id, loris_bids_root_dir, data_dir):
         original_file_path = self.scans_tsv_file
-        final_file_path = loris_bids_root_dir + '/sub-' + bids_sub_id + '/' \
+        final_file_path = loris_bids_root_dir + 'sub-' + bids_sub_id + '/ses-' + bids_ses_id + '/' \
                           + os.path.basename(self.scans_tsv_file).replace('sub-', 'sub-' + bids_sub_id[0:3])
 
         # copy the scans.tsv file to the new directory
-        if os.path.exists(final_file_path):
-            lib.utilities.append_to_tsv_file(original_file_path, final_file_path, "filename", self.verbose)
-        else:
+        if not os.path.exists(final_file_path):
             lib.utilities.copy_file(original_file_path, final_file_path, self.verbose)
 
-        # Modify filename row
-        lib.utilities.inject_project_code_in_tsv(
-            final_file_path,
-            bids_sub_id[0:3],
-            "filename",
-            self.verbose
-        )
+            # Modify filename row
+            lib.utilities.inject_project_code_in_tsv(
+                final_file_path,
+                bids_sub_id[0:3],
+                "filename",
+                self.verbose
+            )
 
         # Return relative path
-        return  final_file_path.replace(data_dir, "")
+        return final_file_path.replace(data_dir, "")
