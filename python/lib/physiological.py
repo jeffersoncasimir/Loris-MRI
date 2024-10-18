@@ -1015,9 +1015,8 @@ class Physiological:
         # known opt fields
         optional_fields = (
             'trial_type', 'response_time', 'event_code',
-            'event_value', 'event_sample', 'event_type',
-            'value', 'sample', 'duration', 'onset', 'HED',
-            'channel'  # TODO: Remove value
+            'event_sample', 'event_type', 'sample', 'duration',
+            'onset', 'HED', 'channel'
         )
         # all listed fields
         known_fields = {*event_fields, *optional_fields}
@@ -1068,10 +1067,6 @@ class Physiological:
                 response_time = row['response_time']
 
             event_value = None
-            if row['event_value']:
-                event_value = str(row['event_value'])
-            elif row['value']:
-                event_value = str(row['value'])
 
             trial_type = None
             if row['trial_type']:

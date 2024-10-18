@@ -179,6 +179,7 @@ class Eeg:
                                                    session=self.bids_ses_id,
                                                    return_type='filename'
                                                    )[0]
+
         self.create_chunks = create_chunks
 
         # register the data into LORIS
@@ -457,7 +458,9 @@ class Eeg:
 
                 # copy the scans.tsv file to the LORIS BIDS import directory
                 scans_path = scan_info.copy_scans_tsv_file_to_loris_bids_dir(
-                    self.project_alias + self.bids_sub_id, self.bids_ses_id, self.loris_bids_root_dir, self.data_dir
+                    self.project_alias + self.bids_sub_id,
+                    self.bids_ses_id if self.bids_ses_id else self.default_vl,
+                    self.loris_bids_root_dir, self.data_dir
                 )
 
                 eeg_file_data['scans_tsv_file'] = scans_path

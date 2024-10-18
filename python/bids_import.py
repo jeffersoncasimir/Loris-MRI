@@ -323,7 +323,7 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
                 Eeg(
                     bids_reader   = bids_reader,
                     bids_sub_id   = bids_sub_id,
-                    bids_ses_id   = visit_label,
+                    bids_ses_id   = bids_session,
                     bids_modality = modality,
                     project_alias = single_project_alias,
                     db            = db,
