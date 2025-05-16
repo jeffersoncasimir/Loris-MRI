@@ -351,6 +351,16 @@ def read_and_insert_bids(bids_dir, config_file, verbose, createcand, createvisit
                     loris_bids_root_dir    = loris_bids_root_dir
                 )
 
+    # Create db entries for README and packaged phenotype folder
+    param_type_obj = ParameterType(self.db, self.verbose)
+    if os.path.isfile(loris_bids_root_dir + "README"):
+        parameter_type_id = param_type_obj.get_parameter_type_id('ReadmeLocation')
+        param_type_obj.insert_parameter_project(parameter_type_id, loris_bids_root_dir + "README")
+
+    if os.path.isfile(loris_bids_root_dir + "phenotype.tgz"):
+        parameter_type_id = param_type_obj.get_parameter_type_id('PhenotypeLocation')
+        param_type_obj.insert_parameter_project(parameter_type_id, loris_bids_root_dir + "phenotype.tgz")
+
     # TODO RENAME, COPY, THEN EDIT SCANS.TSV
     # disconnect from the database
     db.disconnect()
@@ -417,6 +427,30 @@ def create_loris_bids_directory(bids_reader, data_dir, verbose):
             bids_dir + "participants.tsv",
             loris_bids_dirname + "participants.tsv",
             verbose
+        )
+
+    # copy the phenotype folder
+    if os.path.exists(bids_dir + "phenotype"):
+        phenotype_dir = lib.utilities.create_dir(
+            loris_bids_dirname + "phenotype",
+            verbose
+        )
+        files_to_archive = ()
+        for file in os.listdir(bids_dir + "phenotype"):
+            lib.utilities.copy_file(
+                bids_dir + "phenotype/" + file,
+                phenotype_dir + "/" + file,
+                verbose
+            )
+            files_to_archive = files_to_archive + (
+                os.path.join(phenotype_dir, file),
+            )
+
+        # Create archive
+        lib.utilities.create_archive(
+            files_to_archive,
+            'phenotype.tgz',
+            loris_bids_dirname
         )
 
     return loris_bids_dirname

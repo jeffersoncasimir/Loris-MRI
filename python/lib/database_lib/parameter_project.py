@@ -21,6 +21,14 @@ class ParameterProject:
         self.table = 'parameter_project'
         self.verbose = verbose
 
+    def insert_parameter_project(self, parameter_type_id, value):
+        return self.db.insert(
+            table_name=self.table,
+            column_names=('ProjectID', 'ParameterTypeID', 'Value'),
+            values=(project_id, parameter_type_id, value)
+        )
+
+
     def insert_channel_delimiter(self, project_id, delimiter):
         """
         Adds a ChannelDelimiter `parameter_type` to the
@@ -38,11 +46,7 @@ class ParameterProject:
         parameter_type_id = param_type_obj.get_parameter_type_id('ChannelDelimiter')
 
         if parameter_type_id:
-            return self.db.insert(
-                table_name=self.table,
-                column_names=('ProjectID', 'ParameterTypeID', 'Value'),
-                values=(project_id, parameter_type_id, delimiter)
-            )
+            return self.insert_parameter_project(parameter_type_id, delimeter)
 
         if self.verbose:
             print('Unable to add ChannelDelimiter "{}" to ProjectID {}'.format(delimiter, project_id))
